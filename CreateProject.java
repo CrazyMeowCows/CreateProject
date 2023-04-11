@@ -7,6 +7,8 @@ import java.net.URL;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 
+//water tile https://www.google.com/url?sa=i&url=https%3A%2F%2Fsharecg.com%2Fv%2F2987%2Ffavorite%2F6%2Ftexture%2Ftileable-water-02&psig=AOvVaw150yNy2zSuRXMn7Z7jQD5B&ust=1681307294815000&source=images&cd=vfe&ved=0CA0QjRxqFwoTCKDa7fT7of4CFQAAAAAdAAAAABAI
+
 @SuppressWarnings("serial")
 public class CreateProject extends JPanel {
 
@@ -17,10 +19,17 @@ public class CreateProject extends JPanel {
     static final int width = gd.getDisplayMode().getWidth()-100;
     static final int height = gd.getDisplayMode().getHeight()-100;
 
-    static int offset = 0;
-    static final Image cloud = imageURL("https://raw.githubusercontent.com/CrazyMeowCows/CreateProject/main/CreazillaCloud.png");
-    static final int cloudWidth = 677 / 3;
-    static final int cloudHeight = 369 / 3;
+    static double cloudOffset = 0;
+    static CreateMethods.Cloud[] clouds;
+    static final Image cloud = CreateMethods.imageURL("https://raw.githubusercontent.com/CrazyMeowCows/CreateProject/main/CreazillaCloud.png");
+    static final int cloudWidth = 226;
+    static final int cloudHeight = 123;
+
+    static double waveOffset = 0;
+    static final Image water = CreateMethods.imageURL("https://raw.githubusercontent.com/CrazyMeowCows/CreateProject/main/waterTile.png");
+    static final Image wave = CreateMethods.imageURL("https://raw.githubusercontent.com/CrazyMeowCows/CreateProject/main/waveTile.png");
+    static final int waterWidth = 180;
+    static final int waterHeight = 180;
 
     static final Color skyBlue = new Color(136, 203, 220);
 
@@ -44,6 +53,10 @@ public class CreateProject extends JPanel {
             }
         });
         timer.start();  
+
+        for (int i = 0; i < 10; i++) {
+            // clouds
+        }
     }
 
 //Drawing
@@ -56,25 +69,24 @@ public class CreateProject extends JPanel {
 
             g2d.drawImage(cloud, 50, 50, cloudWidth, cloudHeight, null);
 
-            g2d.setColor(Color.BLUE); //Draw main body of ocean
-            g2d.fillRect(0, 300, width, height);
 
-            offset++; //Add waves on top of ocean
-            if (offset >= 100) {offset = 0;}
-            for (int x = -200; x < width; x += 100) {
-                g2d.fillArc(x + offset, 292, 100, 16, 0, 180);
-            }
+            drawWater(g2d);
         }
     }
 
-//Methods
-    public static Image imageURL(String link){  
-        Image finalImage = null;
-        try {
-            finalImage = ImageIO.read(new URL(link));
-        } catch(IOException ie) {
-            ie.printStackTrace();
+    static void drawWater (Graphics2D g2d) {
+        waveOffset += 0.25;
+        if (waveOffset >= waterWidth) {waveOffset = 0;}
+
+        for (int x = -waterWidth; x < width; x += waterWidth) {
+            for (int y = 300; y < height; y += waterHeight) {
+                g2d.drawImage(wave, x+(int)waveOffset, y, waterWidth, waterHeight, null);
+            }
         }
-        return finalImage;
-    } 
+        for (int x = -waterWidth; x < width; x += waterWidth) {
+            for (int y = 300+waterHeight; y < height; y += waterHeight) {
+                g2d.drawImage(water, x+(int)waveOffset, y, waterWidth, waterHeight, null);
+            }
+        }
+    }
 }
