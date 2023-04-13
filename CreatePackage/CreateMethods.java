@@ -1,3 +1,4 @@
+package CreatePackage;
 import java.awt.*;
 import java.io.IOException;
 import java.net.URL;
@@ -14,29 +15,13 @@ public class CreateMethods {
         return finalImage;
     } 
 
-    public static class Cloud{
-        private Image image;
-        private int x;
-        private int y;
+    static class Vector2 {              
+        public double x;
+        public double y;
 
-        public Cloud(Image image, int x, int y){
-            this.image = image;
+        public Vector2(double x, double y) {
             this.x = x;
             this.y = y;
-        }
-
-        public void moveX () {
-            x++;
-        }
-
-        public Image image(){
-            return image;
-        }
-        public int x(){
-            return x;
-        }
-        public int y(){
-            return y;
         }
     }
 }

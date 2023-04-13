@@ -1,13 +1,18 @@
+package CreatePackage;
+
 //Imports--------------------------------------------------------------------------------------------------------------------------------------------
 import java.awt.*;
 import java.awt.event.*;
-import java.io.IOException;
-import java.net.URL;
+import java.util.Vector;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 
+import CreatePackage.CreateMethods.Vector2;
+
 //water tile https://www.google.com/url?sa=i&url=https%3A%2F%2Fsharecg.com%2Fv%2F2987%2Ffavorite%2F6%2Ftexture%2Ftileable-water-02&psig=AOvVaw150yNy2zSuRXMn7Z7jQD5B&ust=1681307294815000&source=images&cd=vfe&ved=0CA0QjRxqFwoTCKDa7fT7of4CFQAAAAAdAAAAABAI
+//sub https://www.freepik.com/free-vector/military-submarine-white-background_26353593.htm#query=military%20submarine&position=0&from_view=keyword&track=ais
+//cloud https://creazilla.com/nodes/3159387-cloud-clipart
+
 
 @SuppressWarnings("serial")
 public class CreateProject extends JPanel {
@@ -20,7 +25,7 @@ public class CreateProject extends JPanel {
     static final int height = gd.getDisplayMode().getHeight()-100;
 
     static double cloudOffset = 0;
-    static CreateMethods.Cloud[] clouds;
+    static Vector2[] cloudPos = new Vector2[10];
     static final Image cloud = CreateMethods.imageURL("https://raw.githubusercontent.com/CrazyMeowCows/CreateProject/main/CreazillaCloud.png");
     static final int cloudWidth = 226;
     static final int cloudHeight = 123;
@@ -31,7 +36,9 @@ public class CreateProject extends JPanel {
     static final int waterWidth = 180;
     static final int waterHeight = 180;
 
-    static final Color skyBlue = new Color(136, 203, 220);
+    static final Image sub = CreateMethods.imageURL("https://raw.githubusercontent.com/CrazyMeowCows/CreateProject/main/FreePikSub.png");
+    static final int subWidth = 805 / 2;
+    static final int subHeight = 310 / 2;
 
     //Main------------------------------------------------------------------------------------------------------------------------------------------
     public static void main(String[] args) {
@@ -54,8 +61,8 @@ public class CreateProject extends JPanel {
         });
         timer.start();  
 
-        for (int i = 0; i < 10; i++) {
-            // clouds
+        for (int i = 0; i < cloudPos.length; i++) {
+            cloudPos[i] = new Vector2(Math.random()*width, Math.random()*200);
         }
     }
 
@@ -65,12 +72,12 @@ public class CreateProject extends JPanel {
             super.paintComponent(g);
             Graphics2D g2d = (Graphics2D) g;
 
-            setBackground(skyBlue); //Fill background with sky blue
+            setBackground(new Color(136, 203, 220)); //Fill background with skyblue
 
-            g2d.drawImage(cloud, 50, 50, cloudWidth, cloudHeight, null);
-
-
+            drawClouds(g2d);
             drawWater(g2d);
+
+            g2d.drawImage(sub, 100, 400, null);
         }
     }
 
@@ -87,6 +94,16 @@ public class CreateProject extends JPanel {
             for (int y = 300+waterHeight; y < height; y += waterHeight) {
                 g2d.drawImage(water, x+(int)waveOffset, y, waterWidth, waterHeight, null);
             }
+        }
+    }
+
+    static void drawClouds (Graphics2D g2d) {
+        for (int i = 0; i < cloudPos.length; i++) {
+            cloudPos[i].x++;
+            if (cloudPos[i].x > width) {
+                cloudPos[i] = new Vector2(-Math.random()*width-cloudWidth, Math.random()*200);
+            }
+            g2d.drawImage(cloud, (int)cloudPos[i].x, (int)cloudPos[i].y, cloudWidth, cloudHeight, null);
         }
     }
 }
