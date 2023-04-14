@@ -3,6 +3,7 @@ package CreatePackage;
 //Imports--------------------------------------------------------------------------------------------------------------------------------------------
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 import java.util.Vector;
 
 import javax.swing.*;
@@ -32,13 +33,44 @@ public class CreateProject extends JPanel {
 
     static double waveOffset = 0;
     static final Image water = CreateMethods.imageURL("https://raw.githubusercontent.com/CrazyMeowCows/CreateProject/main/waterTile.png");
-    static final Image wave = CreateMethods.imageURL("https://raw.githubusercontent.com/CrazyMeowCows/CreateProject/main/waveTile.png");
+    static final Image wave = CreateMethods.imageURL("https://raw.githubusercontent.com/CrazyMeowCows/CreateProject/main/waveTile2.png");
     static final int waterWidth = 180;
     static final int waterHeight = 180;
 
     static final Image sub = CreateMethods.imageURL("https://raw.githubusercontent.com/CrazyMeowCows/CreateProject/main/FreePikSub.png");
     static final int subWidth = 805 / 2;
     static final int subHeight = 310 / 2;
+    static Vector2 subPos = new Vector2(width/2-subWidth/2, height-300);
+    static String subDir = "left";
+
+    static ArrayList<String> keysPressed = new ArrayList<String>();
+
+    public CreateProject() {
+		KeyListener listener = new keyListener();
+		addKeyListener(listener);
+		setFocusable(true);
+	}
+
+    public class keyListener implements KeyListener {
+		@Override
+		public void keyTyped(KeyEvent e) {}
+
+		@Override
+		public void keyPressed(KeyEvent e) {
+            if (!keysPressed.contains(KeyEvent.getKeyText(e.getKeyCode()))) {
+                keysPressed.add(KeyEvent.getKeyText(e.getKeyCode()));
+            }
+		}
+
+		@Override
+		public void keyReleased(KeyEvent e) {
+            try {
+                keysPressed.remove(keysPressed.indexOf(KeyEvent.getKeyText(e.getKeyCode())));
+            } catch (IndexOutOfBoundsException i) {
+                System.err.println(i);
+            }
+		}
+	}
 
     //Main------------------------------------------------------------------------------------------------------------------------------------------
     public static void main(String[] args) {
@@ -46,6 +78,7 @@ public class CreateProject extends JPanel {
         panel.setLayout(null);
         panel.setPreferredSize(new Dimension(width, height));
 
+        frame.add(new CreateProject());
         frame.add(panel);
 
         // frame.setIconImage(imageURL("https://raw.githubusercontent.com/CrazyMeowCows/CreateProject/main/CreazillaCloud.png"));
@@ -56,17 +89,31 @@ public class CreateProject extends JPanel {
 
         Timer timer = new Timer(20, new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
+                gameLogic();
                 frame.repaint();
             }
         });
         timer.start();  
 
         for (int i = 0; i < cloudPos.length; i++) {
-            cloudPos[i] = new Vector2(Math.random()*width, Math.random()*200);
+            cloudPos[i] = new Vector2(Math.random()*width, Math.random()*180);
         }
     }
 
 //Drawing
+    static void gameLogic () {
+        if (keysPressed.contains("W")) {subPos.y -= 5;}
+        if (keysPressed.contains("S")) {subPos.y += 5;}
+        if (keysPressed.contains("A")) {
+            subPos.x -= 5;
+            subDir = "left";
+        }
+        if (keysPressed.contains("D")) {
+            subPos.x += 5;
+            subDir = "right";
+        }
+    }
+
     static class DrawingManager extends JPanel {
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
@@ -77,7 +124,10 @@ public class CreateProject extends JPanel {
             drawClouds(g2d);
             drawWater(g2d);
 
-            g2d.drawImage(sub, 100, 400, null);
+            g2d.translate(subPos.x, subPos.y);
+            g2d.scale( 1, -1 );
+            g2d.drawImage(sub, (int)subPos.x-subWidth/2, (int)subPos.y-subWidth/2, subWidth, subHeight, null);
+            g2d.scale( 1, 1 );
         }
     }
 
@@ -86,22 +136,24 @@ public class CreateProject extends JPanel {
         if (waveOffset >= waterWidth) {waveOffset = 0;}
 
         for (int x = -waterWidth; x < width; x += waterWidth) {
-            for (int y = 300; y < height; y += waterHeight) {
+            for (int y = 250; y < height; y += waterHeight) {
                 g2d.drawImage(wave, x+(int)waveOffset, y, waterWidth, waterHeight, null);
             }
         }
         for (int x = -waterWidth; x < width; x += waterWidth) {
-            for (int y = 300+waterHeight; y < height; y += waterHeight) {
+            for (int y = 250+waterHeight; y < height; y += waterHeight) {
                 g2d.drawImage(water, x+(int)waveOffset, y, waterWidth, waterHeight, null);
             }
         }
+        g2d.setColor(new Color(0, 0, 200));
+        g2d.fillRect(0, 400, width, height);
     }
 
     static void drawClouds (Graphics2D g2d) {
         for (int i = 0; i < cloudPos.length; i++) {
             cloudPos[i].x++;
             if (cloudPos[i].x > width) {
-                cloudPos[i] = new Vector2(-Math.random()*width-cloudWidth, Math.random()*200);
+                cloudPos[i] = new Vector2(-Math.random()*width-cloudWidth, Math.random()*180);
             }
             g2d.drawImage(cloud, (int)cloudPos[i].x, (int)cloudPos[i].y, cloudWidth, cloudHeight, null);
         }
