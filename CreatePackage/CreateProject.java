@@ -4,15 +4,16 @@ package CreatePackage;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Vector;
 
 import javax.swing.*;
 
 import CreatePackage.CreateMethods.Vector2;
 
-//water tile https://www.google.com/url?sa=i&url=https%3A%2F%2Fsharecg.com%2Fv%2F2987%2Ffavorite%2F6%2Ftexture%2Ftileable-water-02&psig=AOvVaw150yNy2zSuRXMn7Z7jQD5B&ust=1681307294815000&source=images&cd=vfe&ved=0CA0QjRxqFwoTCKDa7fT7of4CFQAAAAAdAAAAABAI
 //sub https://www.freepik.com/free-vector/military-submarine-white-background_26353593.htm#query=military%20submarine&position=0&from_view=keyword&track=ais
 //cloud https://creazilla.com/nodes/3159387-cloud-clipart
+//torpedo https://www.google.com/imgres?imgurl=https%3A%2F%2Fstatic.vecteezy.com%2Fsystem%2Fresources%2Fthumbnails%2F010%2F882%2F949%2Fsmall%2Fflat-torpedo-sea-marine-weapon-technology-sign-isolated-white-icon-naval-nautical-submarine-bomb-vector.jpg&tbnid=isE6AQCn7FRdMM&vet=12ahUKEwiEqfjNy7P-AhWZKd4AHaJhAuoQMygEegUIARDVAQ..i&imgrefurl=https%3A%2F%2Fwww.vecteezy.com%2Ffree-vector%2Ftorpedo&docid=cd68Qo3dwlGDEM&w=200&h=200&q=torpedo%20clipart&ved=2ahUKEwiEqfjNy7P-AhWZKd4AHaJhAuoQMygEegUIARDVAQ&safe=active&ssui=on
 
 
 @SuppressWarnings("serial")
@@ -32,18 +33,23 @@ public class CreateProject extends JPanel {
     static final int cloudHeight = 123;
 
     static double waveOffset = 0;
-    static final Image water = CreateMethods.imageURL("https://raw.githubusercontent.com/CrazyMeowCows/CreateProject/main/waterTile.png");
     static final Image wave = CreateMethods.imageURL("https://raw.githubusercontent.com/CrazyMeowCows/CreateProject/main/waveTile2.png");
-    static final int waterWidth = 180;
-    static final int waterHeight = 180;
+    static final int waveWidth = 180;
+    static final int waveHeight = 180;
 
     static final Image sub = CreateMethods.imageURL("https://raw.githubusercontent.com/CrazyMeowCows/CreateProject/main/FreePikSub.png");
     static final int subWidth = 805 / 2;
     static final int subHeight = 310 / 2;
-    static Vector2 subPos = new Vector2(width/2-subWidth/2, height-300);
-    static String subDir = "left";
+    static Vector2 subPos = new Vector2(width/2, height-300);
+    static int subDir = -1;
+
+    static final Image torp = CreateMethods.imageURL("https://raw.githubusercontent.com/CrazyMeowCows/CreateProject/main/torpedoSprite.png");
+    static final int torpWidth = 200 / 2;
+    static final int torpHeight = 200 / 2;
+    static int reload = 0;
 
     static ArrayList<String> keysPressed = new ArrayList<String>();
+    static ArrayList<Vector2> torps = new ArrayList<Vector2>();
 
     public CreateProject() {
 		KeyListener listener = new keyListener();
@@ -102,16 +108,25 @@ public class CreateProject extends JPanel {
 
 //Drawing
     static void gameLogic () {
-        if (keysPressed.contains("W")) {subPos.y -= 5;}
-        if (keysPressed.contains("S")) {subPos.y += 5;}
-        if (keysPressed.contains("A")) {
+        if (keysPressed.contains("W") && subPos.y > 320+subHeight/2) {
+            subPos.y -= 5;
+        }
+        if (keysPressed.contains("S") & subPos.y < height-subHeight/2) {
+            subPos.y += 5;
+        }
+        if (keysPressed.contains("A") && subPos.x > subWidth/2) {
             subPos.x -= 5;
-            subDir = "left";
+            subDir = -1;
         }
-        if (keysPressed.contains("D")) {
+        if (keysPressed.contains("D") && subPos.x < width-subWidth/2) {
             subPos.x += 5;
-            subDir = "right";
+            subDir = 1;
         }
+        if (keysPressed.contains("Space") && reload <= 0) {
+            torps.add(new Vector2(subPos.x + 70 * subDir, subPos.y));
+            reload = 50*2;
+        } 
+        reload = Math.max(reload-1, 0); 
     }
 
     static class DrawingManager extends JPanel {
@@ -124,25 +139,37 @@ public class CreateProject extends JPanel {
             drawClouds(g2d);
             drawWater(g2d);
 
-            g2d.translate(subPos.x, subPos.y);
-            g2d.scale( 1, -1 );
-            g2d.drawImage(sub, (int)subPos.x-subWidth/2, (int)subPos.y-subWidth/2, subWidth, subHeight, null);
-            g2d.scale( 1, 1 );
+            Iterator<Vector2> itr = torps.iterator();            
+            while(itr.hasNext()){
+                Vector2 vector2 = itr.next();
+                if (vector2.y < 330) {
+                    itr.remove();
+                }
+                g2d.drawImage(torp, (int)vector2.x-torpWidth/2, (int)vector2.y-torpHeight/2, torpWidth, torpHeight, null);
+                vector2.y -= 5;
+            }
+
+            drawSub(g2d);
         }
     }
 
+    static void drawSub (Graphics2D g2d) {
+        g2d.translate(subPos.x, subPos.y);
+        if (subDir == 1) {
+            g2d.scale( -1, 1 );
+        }
+        g2d.drawImage(sub, -subWidth/2, -subHeight/2, subWidth, subHeight, null);
+        g2d.scale( 1, 1 );
+        g2d.translate(0, 0);
+}
+
     static void drawWater (Graphics2D g2d) {
         waveOffset += 0.25;
-        if (waveOffset >= waterWidth) {waveOffset = 0;}
+        if (waveOffset >= waveWidth) {waveOffset = 0;}
 
-        for (int x = -waterWidth; x < width; x += waterWidth) {
-            for (int y = 250; y < height; y += waterHeight) {
-                g2d.drawImage(wave, x+(int)waveOffset, y, waterWidth, waterHeight, null);
-            }
-        }
-        for (int x = -waterWidth; x < width; x += waterWidth) {
-            for (int y = 250+waterHeight; y < height; y += waterHeight) {
-                g2d.drawImage(water, x+(int)waveOffset, y, waterWidth, waterHeight, null);
+        for (int x = -waveWidth; x < width; x += waveWidth) {
+            for (int y = 250; y < height; y += waveHeight) {
+                g2d.drawImage(wave, x+(int)waveOffset, y, waveWidth, waveHeight, null);
             }
         }
         g2d.setColor(new Color(0, 0, 200));
