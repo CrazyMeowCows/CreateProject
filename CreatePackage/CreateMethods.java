@@ -15,6 +15,24 @@ public class CreateMethods {
         return finalImage;
     } 
 
+    static class GIF {              
+        public Image img;
+        public Vector2 pos;
+        public int w;
+        public int h;
+        public int length;
+        public int inc;
+
+        public GIF(Image img, Vector2 pos, int w, int h, int length) {
+            this.img = img;
+            this.pos = pos;
+            this.w = w;
+            this.h = h;
+            this.length = length;
+            this.inc = 0;
+        }
+    }
+
     static class Vector2 {              
         public double x;
         public double y;

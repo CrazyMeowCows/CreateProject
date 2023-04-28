@@ -8,8 +8,7 @@ import java.util.Iterator;
 
 import javax.swing.*;
 
-import CreatePackage.CreateMethods.Launcher;
-import CreatePackage.CreateMethods.Vector2;
+import CreatePackage.CreateMethods.*;
 
 public class CreateProject extends JPanel {
 
@@ -47,10 +46,10 @@ public class CreateProject extends JPanel {
     static final Image splash = CreateMethods.imageURL("https://raw.githubusercontent.com/CrazyMeowCows/CreateProject/main/waterGIF.gif");
     static final int splashWidth = 32 * scale;
     static final int splashHeight = 32 *  scale;
-    static final Image fire = CreateMethods.imageURL("https://raw.githubusercontent.com/CrazyMeowCows/CreateProject/main/fireGIF.gif");
+    static final Image fire = CreateMethods.imageURL("https://raw.githubusercontent.com/CrazyMeowCows/CreateProject/main/flameGIF.gif");
     static final int fireWidth = 8 * scale;
     static final int fireHeight = 34 *  scale;
-    static final Image explosion = CreateMethods.imageURL("https://github.com/CrazyMeowCows/CreateProject/blob/main/explosionGIF%20(1).gif?raw=true");
+    static final Image explosion = CreateMethods.imageURL("https://raw.githubusercontent.com/CrazyMeowCows/CreateProject/main/explosionGIF.gif");
     static final int explosionWidth = 20 * scale;
     static final int explosionHeight = 20 *  scale;
 
@@ -69,9 +68,10 @@ public class CreateProject extends JPanel {
     static ArrayList<String> keysPressed = new ArrayList<String>();
     static ArrayList<Vector2> torps = new ArrayList<Vector2>();
     static ArrayList<Vector2> charges = new ArrayList<Vector2>();
+    static ArrayList<GIF> gifs = new ArrayList<GIF>();
 
     static Launcher[] launchers = {new Launcher(), new Launcher(), new Launcher()};
-    static Vector2[] cloudPos = new Vector2[5];
+    static Vector2[] cloudPos = new Vector2[7];
 
     static Timer timer;
 
@@ -190,15 +190,13 @@ public class CreateProject extends JPanel {
             setBackground(new Color(136, 203, 220)); //Fill background with skyblue
 
             drawClouds(g2d); //Call drawing functions for each of the game elements
+            drawLaunchers(g2d);
             drawShip(g2d);
             drawWater(g2d);
-            drawLaunchers(g2d);
             drawCharges(g2d);
             drawTorps(g2d);
             drawSub(g2d);
-
-            g2d.drawImage(explosion, (int)300, (int)300, explosionWidth, explosionHeight, null);
-
+            drawGIFS(g2d);
         }
     }
 
@@ -208,6 +206,8 @@ public class CreateProject extends JPanel {
         for (int i = 0; i < launchers.length; i++) {
             if (launchers[i].health > 0) {
                 g2d.drawImage(launcher, (int)launchers[i].x-launcherWidth/2, (int)(shipPos.y - 3.5*scale), launcherWidth, launcherHeight, null);
+            } else {
+                g2d.drawImage(fire, (int)launchers[i].x-launcherWidth/2-1*scale, (int)(shipPos.y + 1.5*scale - fireHeight), fireWidth, fireHeight, null);
             }
         }
     }
@@ -216,9 +216,11 @@ public class CreateProject extends JPanel {
         g2d.translate(subPos.x, subPos.y);
         if (subDir != 1) {
             g2d.scale( -1, 1 );
+            g2d.drawImage(sub, -subWidth/2, -subHeight/2, subWidth, subHeight, null);
+            g2d.scale( -1, 1 );
+        } else {
+            g2d.drawImage(sub, -subWidth/2, -subHeight/2, subWidth, subHeight, null);
         }
-        g2d.drawImage(sub, -subWidth/2, -subHeight/2, subWidth, subHeight, null);
-        g2d.scale( 1, 1 );
         g2d.translate(-subPos.x, -subPos.y);
     }
 
@@ -234,6 +236,19 @@ public class CreateProject extends JPanel {
         g2d.translate(-shipPos.x, -shipPos.y);
     }
 
+    static void drawGIFS (Graphics2D g2d) {
+        Iterator<GIF> itr = gifs.iterator();            
+        while(itr.hasNext()){
+            GIF gif = itr.next();
+            if (gif.inc < gif.length) {
+                g2d.drawImage(gif.img, (int)gif.pos.x - gif.w/2, (int)gif.pos.y - gif.h/2, gif.w, gif.h, null);
+                gif.inc++;
+            } else {
+                itr.remove();
+            }
+        }
+    }
+
     static void drawCharges (Graphics2D g2d) {
         Iterator<Vector2> itr = charges.iterator();            
         while(itr.hasNext()){
@@ -243,6 +258,7 @@ public class CreateProject extends JPanel {
             } else if (vector2.y > subPos.y-subHeight/2 && vector2.y < subPos.y+subHeight/2 && vector2.x > subPos.x-subWidth/2 && vector2.x < subPos.x+subWidth/2) {
                 subHealth -= 40;
                 itr.remove();
+                gifs.add(new GIF(explosion, vector2, explosionWidth, explosionHeight, 30));
             }
             g2d.drawImage(charge, (int)vector2.x-chargeWidth/2, (int)vector2.y-chargeHeight/2, chargeWidth, chargeHeight, null);
             vector2.y += 5;
@@ -255,10 +271,15 @@ public class CreateProject extends JPanel {
             Vector2 vector2 = itr.next();
             if (vector2.y < 330) {
                 itr.remove();
+                boolean hit = false;
                 for (int i = 0; i < launchers.length; i++) {
                     if (Math.abs(vector2.x - launchers[i].x) < launcherWidth/2) {
                         launchers[i].health -= 50;
+                        hit = true;
                     }
+                }
+                if (!hit) {
+                    gifs.add(new GIF(splash, vector2, splashWidth, splashHeight, 20));
                 }
             }
             g2d.drawImage(torp, (int)vector2.x-torpWidth/2, (int)vector2.y-torpHeight/2, torpWidth, torpHeight, null);
@@ -286,7 +307,7 @@ public class CreateProject extends JPanel {
         for (int i = 0; i < cloudPos.length; i++) {
             cloudPos[i].x++;
             if (cloudPos[i].x > width) {
-                cloudPos[i] = new Vector2(-Math.random()*width-cloudWidth, Math.random()*150);
+                cloudPos[i] = new Vector2(-cloudWidth, Math.random()*150);
             }
             g2d.drawImage(cloud, (int)cloudPos[i].x, (int)cloudPos[i].y, cloudWidth, cloudHeight, null);
         }
